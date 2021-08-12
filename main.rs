@@ -3,6 +3,43 @@
 use std::io::Read;
 
 #[allow(dead_code)]
+#[repr(i32)]
+enum Mods {
+    NOMOD = 0,
+    NOFAIL = 1 << 0,
+    EASY = 1 << 1,
+    TOUCHSCREEN = 1 << 2,
+    HIDDEN = 1 << 3,
+    HARDROCK = 1 << 4,
+    SUDDENDEATH = 1 << 5,
+    DOUBLETIME = 1 << 6,
+    RELAX = 1 << 7,
+    HALFTIME = 1 << 8,
+    NIGHTCORE = 1 << 9,
+    FLASHLIGHT = 1 << 10,
+    AUTOPLAY = 1 << 11,
+    SPUNOUT = 1 << 12,
+    AUTOPILOT = 1 << 13,
+    PERFECT = 1 << 14,
+    KEY4 = 1 << 15,
+    KEY5 = 1 << 16,
+    KEY6 = 1 << 17,
+    KEY7 = 1 << 18,
+    KEY8 = 1 << 19,
+    FADEIN = 1 << 20,
+    RANDOM = 1 << 21,
+    CINEMA = 1 << 22,
+    TARGET = 1 << 23,
+    KEY9 = 1 << 24,
+    KEYCOOP = 1 << 25,
+    KEY1 = 1 << 26,
+    KEY3 = 1 << 27,
+    KEY2 = 1 << 28,
+    SCOREV2 = 1 << 29,
+    MIRROR = 1 << 30,
+}
+
+#[allow(dead_code)]
 pub struct BinaryReader {
     data: Vec<u8>,
     offs: usize,
@@ -149,7 +186,7 @@ impl Replay {
         let lzma_data = reader.read(lzma_len);
 
         // create a decompressor
-        let stream = xz2::stream::Stream::new_lzma_decoder(u64::MAX).unwrap();
+        let stream = xz2::stream::Stream::new_lzma_decoder(u64::MAX)?;
         let mut decompressor = xz2::read::XzDecoder::new_stream(lzma_data, stream);
 
         // alloc space for decompressed frames & read into it
@@ -180,7 +217,7 @@ impl Replay {
         // read replay trailers
         replay.score_id = reader.read_i64(); // is an i32 for <2012/10/08
 
-        if replay.mods & 1 << 23 != 0 { // target
+        if replay.mods & Mods::TARGET as i32 != 0 { // target
             reader.read_f64();
         }
 
