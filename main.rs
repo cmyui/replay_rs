@@ -1,8 +1,9 @@
 /* messy replay parser, first rust project :D */
 
+#![allow(dead_code)]
+
 use std::io::Read;
 
-#[allow(dead_code)]
 #[repr(i32)]
 enum Mods {
     NOMOD = 0,
@@ -39,7 +40,6 @@ enum Mods {
     MIRROR = 1 << 30,
 }
 
-#[allow(dead_code)]
 pub struct BinaryReader {
     data: Vec<u8>,
     offs: usize,
@@ -49,10 +49,12 @@ macro_rules! create_read_method {
     ($func:ident, $ty:ty) => {
         #[inline]
         pub fn $func(&mut self) -> $ty {
-            let val: $ty = unsafe {
-                *(self.data[self.offs..self.offs+std::mem::size_of::<$ty>()].as_mut_ptr() as *mut $ty)
+            let size = std::mem::size_of::<$ty>();
+            assert!(self.offs + size <= self.data.len());
+            let val = unsafe {
+                *(self.data[self.offs..self.offs+size].as_mut_ptr() as *mut $ty)
             };
-            self.offs += std::mem::size_of::<$ty>();
+            self.offs += size;
             val
         }
     };
@@ -116,7 +118,6 @@ impl BinaryReader {
     }
 }
 
-#[allow(dead_code)]
 pub struct ReplayFrame {
     delta: i32,
     x: f32,
@@ -124,7 +125,6 @@ pub struct ReplayFrame {
     keys: i32,
 }
 
-#[allow(dead_code)]
 pub struct Replay {
     mode: u8,
     osu_version: i32,
@@ -149,7 +149,6 @@ pub struct Replay {
     seed: i32,
 }
 
-#[allow(dead_code)]
 impl Replay {
     pub fn from_data(data: Vec<u8>) -> std::io::Result<Replay> {
         let mut reader = BinaryReader { data: data, offs: 0 };
@@ -234,6 +233,8 @@ impl Replay {
     }
 }
 
+static REPLAY_FILE: &str = "rrr.osr";
+
 fn main() -> () {
-    let replay = Replay::from_file("rrr.osr");
+    let _replay = Replay::from_file(REPLAY_FILE).unwrap();
 }
